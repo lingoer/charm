@@ -6,15 +6,13 @@ defmodule Charm.Combinators do
 
   def rescue_with(p, rescuer) do
     fn input ->
-      case p.(input) do
-        :error -> rescuer.(input)
-        x -> x
-      end
+      with :error <- p.(input), 
+        do: rescuer.(input)
     end
   end
 
   def choice (ps) do
-    Enum.reduce(ps,&(rescue_with(&2,&1)))
+    Enum.reduce(ps, &(rescue_with(&2,&1)))
   end
 
   def opt(parser, default) do
@@ -45,7 +43,7 @@ defmodule Charm.Combinators do
       h <- parser
       t <- Charm.m do
         sep
-        sep_by(parser, sep)
+        sep_by1(parser, sep)
       end |> opt([])
       return [h|t]
     end
